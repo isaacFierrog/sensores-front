@@ -118,8 +118,8 @@ const obtenerModulos = async() => {
             page: filtroPagina.value
         })).data;    
 
-        if(res.next) 
-            numeroPaginas.value = parseInt(res.next.split('=')[1]);
+        // if(res.next) 
+        //     numeroPaginas.value = parseInt(res.next.split('=')[1]);
         
         listadoModulos.value = res.results;
         reiniciarFiltros();

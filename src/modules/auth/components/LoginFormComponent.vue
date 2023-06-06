@@ -68,11 +68,12 @@ const loginUsuario = async() => {
 
         router.push({ name: 'usuarios-listado' });
         authStore.guardarDatos(res);
-    }catch({ response: { data } }){
-        notificaciones.notificacion('error', {
-            content: 'Error de autenticacion',
-            meta: data.error,
-        })
+    }catch(err){
+        console.log(err);
+        // notificaciones.notificacion('error', {
+        //     content: 'Error de autenticacion',
+        //     meta: data.error,
+        // })
     }
 }
 

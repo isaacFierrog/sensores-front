@@ -6,6 +6,10 @@ const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
+      path: '',
+      redirect: { name: 'auth-login' }
+    },
+    {
       path: '/auth',
       name: 'auth',
       component: () => import('@/modules/auth/layouts/AuthLayout.vue'),
@@ -45,6 +49,11 @@ const router = createRouter({
           component: () => import('@/modules/modulos/views/DetallesView.vue')
         }
       ]
+    },
+    {
+      path: '/salir',
+      name: 'auth-logout',
+      component: () => import('@/modules/auth/views/LogoutView.vue')
     }
   ]
 })

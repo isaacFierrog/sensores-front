@@ -31,6 +31,11 @@ export default defineStore('auth', () => {
         refreshToken.value = refresh;
         usuarioAutenticado.value = usuario;
     }   
+    const reiniciarDatosAuth = () => {
+        usuarioAutenticado.value = null;
+        accessToken.value = null;
+        refreshToken.value = null;
+    }
 
     return {
         //state
@@ -38,5 +43,6 @@ export default defineStore('auth', () => {
 
         //actions
         guardarDatos,
+        reiniciarDatosAuth,
     }
 })

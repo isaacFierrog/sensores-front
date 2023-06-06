@@ -25,6 +25,7 @@
                         <article>
                             <p class="uppercase text-slate-200 font-bold">nombre usuario</p>
                             <NInput
+                                @keypress.enter="obtenerUsuarios"
                                 placeholder="Buscar por nombre de usuario"
                                 v-model:value="filtroNombre"/>
                         </article>
@@ -33,6 +34,7 @@
                         <article>
                             <p class="uppercase text-slate-200 font-bold">mina</p>
                             <NInput
+                                @keypress.enter="obtenerUsuarios"
                                 placeholder="Buscar modulos por mina"
                                 v-model:value="filtroMina"/>
                         </article>
@@ -41,6 +43,7 @@
                         <article>
                             <p class="uppercase text-slate-200 font-bold">area</p>
                             <NInput
+                                @keypress.enter="obtenerUsuarios"
                                 placeholder="Buscar modulos por area"
                                 v-model:value="filtroArea"/>
                         </article>
@@ -112,8 +115,13 @@ const mostrarModalUsuario = () => {
 
 const obtenerUsuarios = async() => {
     try{
-        const res = (await usuariosService.list()).data;
+        const res = (await usuariosService.list({
+            mina: filtroMina.value,
+            area: filtroArea.value,
+            nombre: filtroNombre.value
+        })).data;
         listadoUsuarios.value = res.results;
+        reiniciarFiltros();
         console.log('LISTADO DE USUARIOS');
         console.log(listadoUsuarios.value);
     }catch(err){

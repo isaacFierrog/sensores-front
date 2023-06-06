@@ -38,5 +38,9 @@ const listadoRutas = ref([
     nombre: 'usuarios',
     ruta: { name: 'usuarios-listado' }
   },
+  {
+    nombre: 'salir',
+    ruta: { name: 'auth-logout' }
+  },
 ]);
 </script>

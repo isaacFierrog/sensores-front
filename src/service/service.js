@@ -14,7 +14,6 @@ const instance = axios.create({
 
 instance.interceptors.request.use(
     async(request) => {
-        //Obtener token de acceso
         let tiempoExpiracion;
         let tokenExpirado;
         const tokenAccess = ls.getItem('access');
@@ -30,26 +29,27 @@ instance.interceptors.request.use(
 
         if(!tokenExpirado) return request;
 
-        const res = (await axios.post(`${baseURL}login/refresh/`, {
+        const { access } = (await axios.post(`${baseURL}login/refresh/`, {
             refresh: ls.getItem('refresh')
         })).data;
         
-        ls.setItem('access', res.access);
-        request.headers.Authorization = `Bearer ${ls.getItem('access')}`;
+        ls.setItem('access', access);
+        request.headers.Authorization = `Bearer ${access}`;
         
         return request;
     },
-    error => Promise.reject(error)
+    err => Promise.reject(err)
 );
 
 instance.interceptors.response.use(
-    response => response,
-    error => {
-        if(error.response && error.response.status === 401){
+    res => res,
+    err => {
+        if(err.response.status === 401){
             ls.clear();
-            router.push({ name: 'auth-login' })
+            router.push({ name: 'auth-login' });
+        }else{
+            return Promise.reject(err)
         }
-        return Promise.reject(error);
     }
 );
 

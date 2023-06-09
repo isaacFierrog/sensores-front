@@ -3,8 +3,8 @@ import jwtDecode from 'jwt-decode';
 import router from '../router';
 
 
-const baseURL = 'http://127.0.0.1:8000/api/';
-// const baseURL = 'http://189.173.80.163:8000/api/';
+// const baseURL = 'http://127.0.0.1:8000/api/';
+const baseURL = 'http://13.57.230.110:8000/api/';
 const ls = localStorage;
 const urlLogin = 'login/';
 const instance = axios.create({

@@ -7,11 +7,11 @@
             <img src="./assets/img/Promev.png" class="w-1/6 -ml-7">
           </template>
         </HeaderComponent>
-
         <router-view></router-view>
       </div>
     </n-notification-provider>
   </section>
+  <Loader v-if="authStore.cargando"/>
 </template>
 
 <script setup>
@@ -24,6 +24,9 @@ import useAuthStore from './modules/auth/store/useAuthStore';
 //Components
 const HeaderComponent = defineAsyncComponent(
   () => import('./modules/global/components/HeaderComponent.vue')
+);
+const Loader = defineAsyncComponent(
+  () => import('./modules/global/components/LoaderComponent.vue')
 );
 
 const authStore = useAuthStore();

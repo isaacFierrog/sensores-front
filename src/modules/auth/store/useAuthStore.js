@@ -14,6 +14,7 @@ export default defineStore('auth', () => {
     const usuarioAutenticado = ref(
         JSON.parse(ls.getItem('usuario'))
     );
+    const cargando = ref(false);
     
     //Actions
     const obtenerDatosSesion = () => {}
@@ -39,6 +40,7 @@ export default defineStore('auth', () => {
 
     return {
         //state
+        cargando,
         usuarioAutenticado,
 
         //actions

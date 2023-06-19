@@ -66,14 +66,14 @@ const loginUsuario = async() => {
             meta: 'Inicio de sesion exitosa'
         })
 
-        router.push({ name: 'usuarios-listado' });
+        router.push({ name: 'modulos-listado' });
         authStore.guardarDatos(res);
     }catch(err){
         console.log(err);
-        // notificaciones.notificacion('error', {
-        //     content: 'Error de autenticacion',
-        //     meta: data.error,
-        // })
+        notificaciones.notificacion('error', {
+            content: 'Error de autenticacion',
+            meta: 'Las credenciales ingresadas no son correctas',
+        })
     }
 }
 

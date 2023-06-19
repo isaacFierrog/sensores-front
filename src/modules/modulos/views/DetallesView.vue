@@ -13,7 +13,11 @@
                 <NGi>
                     <article>
                         <p class="uppercase text-slate-200 font-bold">fecha</p>
-                        <NDatePicker type="date" :clearable="true"/>
+                        <NDatePicker 
+                            type="date" 
+                            :clearable="true"
+                            v-model:value="filtroFecha"
+                            @update-value="obtenerDatosFecha"/>
                     </article>
                 </NGi>
             </NGrid>
@@ -70,6 +74,7 @@ import { NGrid, NGi } from 'naive-ui'
 import { Line } from 'vue-chartjs'
 import 'chart.js/auto'
 import modulosService from '../service/modulosService';
+import datosService from '../service/datosService'
 
 
 //Components
@@ -83,6 +88,10 @@ const TarjetaSensor = defineAsyncComponent(
 const route = useRoute();
 
 //Data
+const FECHA_ACTUAL = new Date();
+const FECHA_SUPERIOR = new Date(
+    new Date().setDate(FECHA_ACTUAL.getDate() + 1)
+);
 const TIEMPO_ACTUALIZACION = 10_000;
 const modulo = ref({
     mac: null,
@@ -92,6 +101,7 @@ const modulo = ref({
 const filtroFecha = ref(null);
 const refActualizacion = ref(null);
 const moduloSensores = ref([]);
+const nuevosDatos = ref([]);
 const graficaOpciones = ref({
     responsive: true
 });
@@ -103,9 +113,9 @@ const asignarDatosModulo = ({ mac, mina, area, sensores }) => {
     modulo.value.area = area;
     moduloSensores.value = sensores;
 }
-const obtenerModulo = async() => {
+const obtenerModulo = async(idModulo, params) => {
     try{
-        const res = (await modulosService.retrieve(route.params.id)).data;
+        const res = (await modulosService.retrieve(idModulo, params)).data;
         console.log('Modulo solicitado');
         console.log(res);
         asignarDatosModulo(res);
@@ -113,30 +123,80 @@ const obtenerModulo = async() => {
         console.log(err);
     }
 }
+const obtenerDatos = async(params) => {
+    try{
+        const res = (await datosService.list(params)).data;
+        console.log('DATOS DEL MODULO OBTENIDO');
+        console.log(res);
+        nuevosDatos.value = res.results;
+    }catch(err){
+        console.log(err);
+    }
+}
+const obtenerDatosFecha = value => {
+    console.log('DATOS DEL MODULO');
+    console.log(moduloSensores.value);
+
+
+    const fechaActual = new Date(value);
+    const fechaSuperior = new Date(
+        new Date().setDate(fechaActual.getDate() + 1)
+    )
+
+    clearInterval(refActualizacion.value);
+    obtenerDatos({
+        modulo: moduloMac.value,
+        fecha_inicio: fechaActual
+            .toLocaleDateString()
+            .split('/')
+            .reverse()
+            .join('-'),
+        fecha_final: fechaSuperior
+            .toLocaleDateString()
+            .split('/')
+            .reverse()
+            .join('-'),
+    });
+    refActualizacion.value = setInterval(() => {
+        obtenerDatos({
+            modulo: moduloMac.value,
+            fecha_inicio: fechaActual
+                .toLocaleDateString()
+                .split('/')
+                .reverse()
+                .join('-'),
+            fecha_final: fechaSuperior
+                .toLocaleDateString()
+                .split('/')
+                .reverse()
+                .join('-'),
+        });
+    }, TIEMPO_ACTUALIZACION);
+}
 
 //Propiedades computadas
 const moduloMac = computed(() => modulo.value.mac);
 const moduloMina = computed(() => modulo.value.mina);
 const moduloArea = computed(() => modulo.value.area);
-const haySensores = computed(() => moduloSensores.value.length > 0);
+const haySensores = computed(() => datosModulo.value.length > 0);
 const estilosSub = computed(() => [
     'text-slate-200'
 ])
-const sensoresEtiquetas = computed(() => moduloSensores.value.length
-    ? moduloSensores.value[0].datos.map(({ fecha_creacion }) => 
+const sensoresEtiquetas = computed(() => datosModulo.value.length
+    ? datosModulo.value[0].datos.map(({ fecha_creacion }) => 
         new Date(fecha_creacion).toLocaleTimeString()
     )
     : []
 );
-const sensoresData = computed(() => moduloSensores.value.length
-    ? moduloSensores.value.map(({ clave, datos }) => ({
+const sensoresData = computed(() => datosModulo.value.length
+    ? datosModulo.value.map(({ clave, datos }) => ({
         label: clave,
         data: datos.map(({ valor }) => valor)
     }))
     : []
 )
-const sensoresTarjetas = computed(() => moduloSensores.value.length
-    ? moduloSensores.value.map(({ clave, datos}) => {
+const sensoresTarjetas = computed(() => datosModulo.value.length
+    ? datosModulo.value.map(({ clave, datos}) => {
         return {
             clave,
             dato: datos.length 
@@ -163,14 +223,63 @@ const graficaData = computed(() => ({
     labels: sensoresEtiquetas.value,
     datasets: sensoresData.value
 }));
+const fechaSelccionada = computed(() => {
+    if(filtroFecha.value){
+        return new Date(filtroFecha.value).toLocaleDateString().replaceAll('/', '-');
+    }
+
+    return null;
+})
+const datosModulo = computed(() => {
+    if(nuevosDatos.value.length){
+        return moduloSensores.value.map(sensor => {
+            return {
+                ...sensor,
+                datos: nuevosDatos.value
+                    .filter(({ sensor: sensorId }) => sensorId === sensor.id)
+            }
+        })
+    }
+
+    return moduloSensores.value
+}); 
+const fechaSuperior = computed(() => {
+    if(filtroFecha.value){
+        const fechaActual = new Date(filtroFecha.value);
+        return fechaActual.setDate(fechaActual.getDate() + 1).toLocaleDateString().replaceAll('/', '-');
+    }
+
+    return null
+})
 
 //Logica
 onMounted(() => {
     refActualizacion.value = setInterval(() => {
-        obtenerModulo();
+        obtenerDatos({
+            modulo: moduloMac.value,
+            fecha_inicio: FECHA_ACTUAL.toLocaleDateString()
+                .split('/')
+                .reverse()
+                .join('-'),
+            fecha_final: FECHA_SUPERIOR.toLocaleDateString()
+                .split('/')
+                .reverse()
+                .join('-')
+        });
     }, TIEMPO_ACTUALIZACION);
 
-    obtenerModulo();
+    obtenerModulo(route.params.id);
+    obtenerDatos({
+        modulo: moduloMac.value,
+        fecha_inicio: FECHA_ACTUAL.toLocaleDateString()
+            .split('/')
+            .reverse()
+            .join('-'),
+        fecha_final: FECHA_SUPERIOR.toLocaleDateString()
+            .split('/')
+            .reverse()
+            .join('-')
+    });
 });
 
 onUnmounted(() => {

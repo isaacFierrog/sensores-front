@@ -14,6 +14,9 @@ export default defineStore('auth', () => {
     const usuarioAutenticado = ref(
         JSON.parse(ls.getItem('usuario'))
     );
+    const rolUsuario = ref(
+        JSON.parse(ls.getItem('usuario'))?.rol
+    )
     const cargando = ref(false);
     
     //Actions
@@ -37,10 +40,13 @@ export default defineStore('auth', () => {
         accessToken.value = null;
         refreshToken.value = null;
     }
+    
+
 
     return {
         //state
         cargando,
+        rolUsuario,
         usuarioAutenticado,
 
         //actions

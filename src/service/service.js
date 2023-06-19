@@ -56,9 +56,11 @@ instance.interceptors.response.use(
     },
     err => {
         const authStore = useAuthStore();
+
         authStore.cargando = false;
         if(err.response.status === 401){
             ls.clear();
+            authStore.reiniciarDatosAuth();
             router.push({ name: 'auth-login' });
         }else{
             return Promise.reject(err)

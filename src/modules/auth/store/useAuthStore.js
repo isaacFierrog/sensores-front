@@ -1,5 +1,7 @@
 import { ref } from 'vue'
+import { onMounted } from 'vue'
 import { defineStore } from 'pinia'
+import jwtDecode from 'jwt-decode';
 
 const ls = localStorage;
 
@@ -21,6 +23,12 @@ export default defineStore('auth', () => {
     
     //Actions
     const obtenerDatosSesion = () => {}
+    const sesionCaducada = () => {
+        const tiempoActual = Math.floor(Date.now() / 1000);
+        const tiempoExpiracion = jwtDecode(accessToken.value).exp;
+
+        return tiempoActual > tiempoExpiracion;
+    }
     const guardarDatos = datosUsuario => {
         asignarDatosSesion(datosUsuario);
         guardarDatosStorage(datosUsuario);
@@ -41,7 +49,10 @@ export default defineStore('auth', () => {
         refreshToken.value = null;
     }
     
-
+    //Logica
+    onMounted(() => {
+        if(sesionCaducada()) reiniciarDatosAuth();
+    })
 
     return {
         //state
